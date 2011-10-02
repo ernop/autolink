@@ -14,8 +14,8 @@ settings=Bag()
 st={'HTTP_BASE':''}
 
 
-st['GENLINK_PREFIX']='<div class="genlink_prefix">Related Links</div>'
-st['GENTAG_PREFIX']='<div class="gentag_prefix">Tags</div>'
+st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
+st['GENTAG_PREFIX']='<div class="gentag_prefix h2">Tags</div>'
 st['LINK_TO_TAG_PAGES']=0
 
 settings.__dict__.update(st)
@@ -182,10 +182,12 @@ def put_stuff_into_html(html, related_rsts, tags):
         if '<body>' in l:
             #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
             l=l.replace('<body>', '<body>'+settings.HEADER)
-        out.write(l)
+
         if l.startswith('<p>tags:'):
             out.write(linksection)
             out.write(tagsection)
+            continue
+        out.write(l)
 
     out.close()
     return

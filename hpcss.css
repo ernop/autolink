@@ -1,0 +1,32 @@
+.genlink_section {
+    float:left;
+	margin-right:100px;
+	padding:20px;
+}
+
+.gentag_section{
+    float:left;
+	padding:20px;
+}
+
+.document{
+    width:60%;
+    margin:auto;
+    display:block;
+}
+
+.genlink_prefix{
+    font-size:2em;
+}
+
+.gentag_prefix{
+    font-size:2em;
+}
+
+.footer{
+    clear:both;
+}
+
+.header{
+    clear:both;
+}
