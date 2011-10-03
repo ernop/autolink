@@ -11,7 +11,7 @@ class Bag:
 settings=Bag()
 
 
-st={'HTTP_BASE':'hp/'}
+st={'HTTP_BASE':'/hp'}
 
 
 st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
@@ -149,7 +149,6 @@ def make_link_section(rsts):
         except:
             title='TITLEMISSING %s'%rst
             import ipdb;ipdb.set_trace();print 'in ipdb!'
-        htmlpath=settings.HTTP_BASE+'/'+rst2htmlpath(rst)
         htmlpath='%s/%s'%(settings.HTTP_BASE,rst2htmlpath(rst))
         pt='<div class="genlink"><a href="%s">%s</a></div>'%(htmlpath, title)
         res.append(pt)
