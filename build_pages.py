@@ -94,7 +94,7 @@ def get_tags(rst):
     for l in open(rst,'r').readlines():
         if l.startswith('tags:'):
             l=l.split('tags:')[-1]
-            tags.extend([tag.strip() for tag in l.split(',')])
+            tags.extend([tag.strip().lower() for tag in l.split(',') if tag])
     return tags
 
 def add_tags_to_db(rst, tags):
@@ -227,6 +227,7 @@ def main(base):
         tags=get_tags(rst)
         add_tags_to_db(rst=rst, tags=tags)
     for rst in rsts:
+        print rst
         tags=tags_from_db(rst)
         related_rsts=get_related_rsts(rst, tags)[:10]
         htmlpath=rst2htmlpath(rst)
