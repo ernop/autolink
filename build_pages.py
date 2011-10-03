@@ -209,6 +209,15 @@ def make_tag_page(tag):
     out.write(settings.TAGPAGE_PREFIX)
     out.write(res)
 
+
+def fix_perms():
+    cmd='chmod 755 .'
+    os.system(cmd)
+    cmd='chmod 644 *.html'
+    os.system(cmd)
+    cmd='chmod 644 *.css'
+    os.system(cmd)
+
 def main(base):
     rsts=full_relative_paths_to_rsts(base)
     dat=make_htmls(rsts)
@@ -226,6 +235,7 @@ def main(base):
     if settings.LINK_TO_TAG_PAGES:
         for tag in alltags:
             make_tag_page(tag)
+    fix_perms()
 
 if __name__=="__main__":
     if len(sys.argv)==1:
