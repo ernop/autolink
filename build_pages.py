@@ -15,16 +15,17 @@ st= {'HTTP_BASE':''}
 
 st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
 st['GENTAG_PREFIX']='<div class="gentag_prefix h2">Tags</div>'
-st['LINK_TO_TAG_PAGES']=0
 st['DEST_BASE']='d:/proj/rst/'
 if os.path.exists('live'):
     st['HTTP_BASE']='/home'
     st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
+st['TAGPAGE_PREFIX']='<div class="header">Tag page for "%s"</div>'
+
 settings.__dict__.update(st)
 
 settings.HEADER=open('header.html','r').read()
 settings.FOOTER=open('footer.html','r').read()
-
+settings.TAG_FOOTER=open('tag_footer.html','r').read()
 
 
 rstdata={}
@@ -82,7 +83,6 @@ def make_htmls(rsts):
                 }
             pub=publish_file(source_path=rst, writer_name='html', destination_path=destpath, settings_overrides=settings_overrides)
             dat[rst]={'title':pub.document.get('title')}
-            #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
         except SystemMessage:
             print 'problem with:',rst
             import ipdb;ipdb.set_trace();print 'in ipdb!'
@@ -158,10 +158,13 @@ def make_link_section(rsts):
     res='<div class="genlink_section">%s%s</div>'%(settings.GENLINK_PREFIX, ''.join(res))
     return res
 
-def make_tag_section(tags, link=True):
+def make_tag_section(tags):
     res=[]
+
     for tag in tags:
-        taglink='%s/tags/%s'%(settings.HTTP_BASE, tag)
+        link=len(tag2rsts(tag, exclude=[]))>1
+        #it is definitely wrong to get this here when you're already getting it later to make the actual tag pages.
+        taglink='%s/tags/%s.html'%(settings.HTTP_BASE, tag2urlsafe(tag))
         if link:
             pt='<div class="gentag"><a href="%s">%s</a></div>'%(taglink, tag)
         else:
@@ -178,7 +181,7 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags):
         import ipdb;ipdb.set_trace();print 'in ipdb!'
     lines=open(htmlpath,'r').readlines()
     linksection=make_link_section(related_rsts)
-    tagsection=make_tag_section(tags, link=settings.LINK_TO_TAG_PAGES)
+    tagsection=make_tag_section(tags)
     out=open(htmlpath,'w')
     moddate=os.stat(htmlpath).st_mtime
     foot=settings.FOOTER%datetime.datetime.strftime(datetime.datetime.fromtimestamp(moddate), '%Y-%m-%d')
@@ -210,13 +213,34 @@ def get_all_tags():
     res=c.execute('''select tag, count(*) from rst2tag group by 1 order by 2''').fetchall()
     return dict([(r[0],r[1]) for r in res])
 
+def tag2urlsafe(tag):
+    return tag.replace(' ','_')
+
 def make_tag_page(tag):
     rsts=tag2rsts(tag, exclude=[])
+    if len(rsts)<=1:
+        return 0
+    print 'tag %s, len %d'%(tag, len(rsts))
     res=make_link_section(rsts)
-    htmlpath='%s/tags/%s.html'%(settings.HTTP_BASE, tag)
-    out=open(htmlpath,'w')
-    out.write(settings.TAGPAGE_PREFIX)
-    out.write(res)
+    rst='_blank.rst'
+    if not os.path.exists(rst):
+        os.system('touch %s'%rst)
+    destpath='%s/tags/%s.html'%(settings.DEST_BASE, tag2urlsafe(tag))
+    settings_overrides={'stylesheet_path':'html4css1.css,hpcss.css',
+        'theme':'big-black',
+        }
+    pub=publish_file(source_path=rst, writer_name='html', destination_path=destpath, settings_overrides=settings_overrides)
+    lines=open(destpath,'r').readlines()
+
+    out=open(destpath,'w')
+    foot=settings.TAG_FOOTER
+    for l in lines:
+        if 'class="document">' in l:
+            fxd=l.replace('class="document">','class="document">%s%s%s'%(settings.TAGPAGE_PREFIX%tag,res, foot))
+            out.write(fxd)
+        else:
+            out.write(l)
+    return len(rsts)
 
 def rst2html(rst):
     return rst.replace('.rst','.html').replace('\\','/')
@@ -246,9 +270,11 @@ def main(base):
         htmlpath=rst2htmlpath(rst)
         put_stuff_into_html(htmlpath, rst2html(rst), related_rsts, tags)
 
-    if settings.LINK_TO_TAG_PAGES:
-        for tag in alltags.keys():
-            make_tag_page(tag)
+    tagdir=os.path.join(settings.DEST_BASE,'tags')
+    if not os.path.exists(tagdir):
+        os.makedirs(tagdir)
+    for tag in alltags.keys():
+        make_tag_page(tag)
     fix_perms()
 
 if __name__=="__main__":
