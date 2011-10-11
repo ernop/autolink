@@ -11,17 +11,21 @@ class Bag:
 settings=Bag()
 
 
-st={'HTTP_BASE':'/hp'}
-
+st={'HTTP_BASE':''}
 
 st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
 st['GENTAG_PREFIX']='<div class="gentag_prefix h2">Tags</div>'
 st['LINK_TO_TAG_PAGES']=0
+st['DEST_BASE']='d:/proj/hp/'
 
 settings.__dict__.update(st)
 
 settings.HEADER=open('header.html','r').read()
-settings.FOOTER=open('footer.html','r').read()%(str(datetime.datetime.now()))
+settings.FOOTER=open('footer.html','r').read()
+
+if os.path.exists('live'):
+    st['HTTP_BASE':'/home']
+    st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
 
 rstdata={}
 
@@ -72,7 +76,7 @@ def make_htmls(rsts):
     for rst in rsts:
         try:
             destpath=rst.replace('.rst','.html')
-
+            destpath=os.path.join(settings.DEST_BASE,destpath)
             settings_overrides={'stylesheet_path':'html4css1.css,hpcss.css',
                 'theme':'big-black',
                 }
@@ -173,11 +177,13 @@ def put_stuff_into_html(html, related_rsts, tags):
     linksection=make_link_section(related_rsts)
     tagsection=make_tag_section(tags, link=settings.LINK_TO_TAG_PAGES)
     out=open(html,'w')
+    moddate=os.stat(html).st_mtime
+    foot=settings.FOOTER%datetime.datetime.strftime(datetime.datetime.fromtimestamp(moddate), '%Y-%m-%d')
     for l in lines:
         #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
         if '</body>' in l:
             #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
-            l=l.replace('</body>', settings.FOOTER+'</body>')
+            l=l.replace('</body>', foot +'</body>')
         if '<body>' in l:
             #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
             l=l.replace('<body>', '<body>'+settings.HEADER)
@@ -223,10 +229,10 @@ def main(base):
     rstdata.update(dat)
     recreate_db()
     for rst in rsts:
+        print rst
         tags=get_tags(rst)
         add_tags_to_db(rst=rst, tags=tags)
     for rst in rsts:
-        print rst
         tags=tags_from_db(rst)
         related_rsts=get_related_rsts(rst, tags)[:10]
         htmlpath=rst2htmlpath(rst)
