@@ -16,7 +16,7 @@ st= {'HTTP_BASE':''}
 st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
 st['GENTAG_PREFIX']='<div class="gentag_prefix h2">Tags</div>'
 st['LINK_TO_TAG_PAGES']=0
-st['DEST_BASE']='d:/proj/hp/'
+st['DEST_BASE']='d:/proj/rst/'
 
 settings.__dict__.update(st)
 
