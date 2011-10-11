@@ -17,15 +17,15 @@ st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
 st['GENTAG_PREFIX']='<div class="gentag_prefix h2">Tags</div>'
 st['LINK_TO_TAG_PAGES']=0
 st['DEST_BASE']='d:/proj/rst/'
-
+if os.path.exists('live'):
+    st['HTTP_BASE']='/home'
+    st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
 settings.__dict__.update(st)
 
 settings.HEADER=open('header.html','r').read()
 settings.FOOTER=open('footer.html','r').read()
 
-if os.path.exists('live'):
-    st['HTTP_BASE']='/home'
-    st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
+
 
 rstdata={}
 
