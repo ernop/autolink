@@ -123,9 +123,8 @@ def recreate_db():
 def tags_from_db(rst):
     conn = sqlite3.connect('tmpdb')
     c=conn.cursor()
-    res=c.execute('select tag from rst2tag where rst="%s"'%rst).fetchall()
-    return [r[0] for r in res]
-    #~ return res
+    res=c.execute('select tag as c from rst2tag where rst="%s"'%rst).fetchall()
+    return sorted([r[0] for r in res])
 
 def tag2rsts(tag, exclude=None):
     conn = sqlite3.connect('tmpdb')
@@ -134,16 +133,15 @@ def tag2rsts(tag, exclude=None):
     res=[r[0] for r in res if r[0] not in exclude]
     return res
 
-def get_related_rsts(rst, tags):
+def get_related_rsts(rst, tags_and_weights):
     res={}
-    for tag in tags:
+    for tag, weight in tags_and_weights:
         rsts=tag2rsts(tag, exclude=rst)
         for subrst in rsts:
-            res[subrst]=res.get(subrst,0)+1
+            res[subrst]=res.get(subrst,0)+(1.0/weight)
     return sorted(list(res), key=lambda x:-1*x[1])
 
 def make_link_section(rsts):
-    #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
     res=[]
     for rst in rsts:
         fn=os.path.split(rst)[1]
@@ -209,8 +207,8 @@ def rst2htmlpath(rst):
 def get_all_tags():
     conn = sqlite3.connect('tmpdb')
     c=conn.cursor()
-    res=c.execute('''select tag from rst2tag''').fetchall()
-    return [r[0] for r in res]
+    res=c.execute('''select tag, count(*) from rst2tag group by 1 order by 2''').fetchall()
+    return dict([(r[0],r[1]) for r in res])
 
 def make_tag_page(tag):
     rsts=tag2rsts(tag, exclude=[])
@@ -240,14 +238,16 @@ def main(base):
         print rst
         tags=get_tags(rst)
         add_tags_to_db(rst=rst, tags=tags)
+    alltags=get_all_tags()
     for rst in rsts:
         tags=tags_from_db(rst)
-        related_rsts=get_related_rsts(rst, tags)[:10]
+        tags_and_weights=sorted([(tag, alltags[tag]) for tag in tags], key=lambda x:x[1])
+        related_rsts=get_related_rsts(rst, tags_and_weights)[:10]
         htmlpath=rst2htmlpath(rst)
         put_stuff_into_html(htmlpath, rst2html(rst), related_rsts, tags)
-    alltags=get_all_tags()
+
     if settings.LINK_TO_TAG_PAGES:
-        for tag in alltags:
+        for tag in alltags.keys():
             make_tag_page(tag)
     fix_perms()
 
