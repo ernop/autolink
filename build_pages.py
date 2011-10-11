@@ -143,6 +143,7 @@ def get_related_rsts(rst, tags):
     return sorted(list(res), key=lambda x:-1*x[1])
 
 def make_link_section(rsts):
+    #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
     res=[]
     for rst in rsts:
         fn=os.path.split(rst)[1]
@@ -153,7 +154,7 @@ def make_link_section(rsts):
         except:
             title='TITLEMISSING %s'%rst
             import ipdb;ipdb.set_trace();print 'in ipdb!'
-        htmlpath='%s/%s'%(settings.HTTP_BASE,rst2htmlpath(rst))
+        htmlpath='%s/%s'%(settings.HTTP_BASE,rst2html(rst))
         pt='<div class="genlink"><a href="%s">%s</a></div>'%(htmlpath, title)
         res.append(pt)
     res='<div class="genlink_section">%s%s</div>'%(settings.GENLINK_PREFIX, ''.join(res))
@@ -171,17 +172,17 @@ def make_tag_section(tags, link=True):
     res='<div class="gentag_section">%s%s</div>'%(settings.GENTAG_PREFIX, ''.join(res))
     return res
 
-def put_stuff_into_html(html, related_rsts, tags):
-    assert html.endswith('.html')
-    if not html.endswith('.html'):
+def put_stuff_into_html(htmlpath, html, related_rsts, tags):
+    assert htmlpath.endswith('.html')
+    if not htmlpath.endswith('.html'):
         import ipdb;ipdb.set_trace();print 'in ipdb!'
-    if not os.path.exists(html):
+    if not os.path.exists(htmlpath):
         import ipdb;ipdb.set_trace();print 'in ipdb!'
-    lines=open(html,'r').readlines()
+    lines=open(htmlpath,'r').readlines()
     linksection=make_link_section(related_rsts)
     tagsection=make_tag_section(tags, link=settings.LINK_TO_TAG_PAGES)
-    out=open(html,'w')
-    moddate=os.stat(html).st_mtime
+    out=open(htmlpath,'w')
+    moddate=os.stat(htmlpath).st_mtime
     foot=settings.FOOTER%datetime.datetime.strftime(datetime.datetime.fromtimestamp(moddate), '%Y-%m-%d')
     for l in lines:
         #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
@@ -202,6 +203,7 @@ def put_stuff_into_html(html, related_rsts, tags):
     return
 
 def rst2htmlpath(rst):
+    """the file path to it."""
     return os.path.join(settings.DEST_BASE,rst.replace('.rst','.html').replace('\\','/'))
 
 def get_all_tags():
@@ -218,6 +220,8 @@ def make_tag_page(tag):
     out.write(settings.TAGPAGE_PREFIX)
     out.write(res)
 
+def rst2html(rst):
+    return rst.replace('.rst','.html').replace('\\','/')
 
 def fix_perms():
     cmd='chmod 755 .'
@@ -240,7 +244,7 @@ def main(base):
         tags=tags_from_db(rst)
         related_rsts=get_related_rsts(rst, tags)[:10]
         htmlpath=rst2htmlpath(rst)
-        put_stuff_into_html(htmlpath, related_rsts, tags)
+        put_stuff_into_html(htmlpath, rst2html(rst), related_rsts, tags)
     alltags=get_all_tags()
     if settings.LINK_TO_TAG_PAGES:
         for tag in alltags:
