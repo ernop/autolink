@@ -11,7 +11,7 @@ class Bag:
 settings=Bag()
 
 
-st={'HTTP_BASE':''}
+st= {'HTTP_BASE':''}
 
 st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
 st['GENTAG_PREFIX']='<div class="gentag_prefix h2">Tags</div>'
