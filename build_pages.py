@@ -173,6 +173,10 @@ def make_tag_section(tags, link=True):
 
 def put_stuff_into_html(html, related_rsts, tags):
     assert html.endswith('.html')
+    if not html.endswith('.html'):
+        import ipdb;ipdb.set_trace();print 'in ipdb!'
+    if not os.path.exists(html):
+        import ipdb;ipdb.set_trace();print 'in ipdb!'
     lines=open(html,'r').readlines()
     linksection=make_link_section(related_rsts)
     tagsection=make_tag_section(tags, link=settings.LINK_TO_TAG_PAGES)
@@ -198,7 +202,7 @@ def put_stuff_into_html(html, related_rsts, tags):
     return
 
 def rst2htmlpath(rst):
-    return rst.replace('.rst','.html').replace('\\','/')
+    return os.path.join(settings.DEST_BASE,rst.replace('.rst','.html').replace('\\','/'))
 
 def get_all_tags():
     conn = sqlite3.connect('tmpdb')
