@@ -16,17 +16,19 @@ st= {'HTTP_BASE':''}
 st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
 st['GENTAG_PREFIX']='<div class="gentag_prefix h2">Tags</div>'
 st['DEST_BASE']='d:/proj/rst/'
-if os.path.exists('live'):
+if os.path.exists('setup/live'):
     st['HTTP_BASE']='/home'
     st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
 st['TAGPAGE_PREFIX']='<div class="header">Tag page for "%s"</div>'
 
 settings.__dict__.update(st)
-
-settings.HEADER=open('header.html','r').read()
-settings.FOOTER=open('footer.html','r').read()
-settings.TAG_FOOTER=open('tag_footer.html','r').read()
-
+MUST_EXIST=['header','footer','tag_footer']
+for f in MUST_EXIST:
+    fn='setup/'+f+'.html'
+    if not os.path.isfile(fn):
+        print 'could not find file',fn
+        sys.exit()
+    setattr(settings, f.upper(), open(fn,'r').read())
 
 rstdata={}
 
@@ -102,7 +104,7 @@ def get_tags(rst):
     return tags
 
 def add_tags_to_db(rst, tags):
-    conn = sqlite3.connect('tmpdb')
+    conn = sqlite3.connect('setup/tmpdb')
     c=conn.cursor()
 
     for tag in tags:
@@ -111,9 +113,9 @@ def add_tags_to_db(rst, tags):
     c.close()
 
 def recreate_db():
-    if os.path.exists('tmpdb'):
-        os.remove('tmpdb')
-    conn = sqlite3.connect('tmpdb')
+    if os.path.exists('setup/tmpdb'):
+        os.remove('setup/tmpdb')
+    conn = sqlite3.connect('setup/tmpdb')
     c=conn.cursor()
     c.execute('''create table rst2tag
         (rst text,  tag text)''')
@@ -121,13 +123,13 @@ def recreate_db():
     c.close()
 
 def tags_from_db(rst):
-    conn = sqlite3.connect('tmpdb')
+    conn = sqlite3.connect('setup/tmpdb')
     c=conn.cursor()
     res=c.execute('select tag as c from rst2tag where rst="%s"'%rst).fetchall()
     return sorted([r[0] for r in res])
 
 def tag2rsts(tag, exclude=None):
-    conn = sqlite3.connect('tmpdb')
+    conn = sqlite3.connect('setup/tmpdb')
     c=conn.cursor()
     res=c.execute('select rst from rst2tag where tag="%s"'%tag).fetchall()
     res=[r[0] for r in res if r[0] not in exclude]
@@ -208,7 +210,7 @@ def rst2htmlpath(rst):
     return os.path.join(settings.DEST_BASE,rst.replace('.rst','.html').replace('\\','/'))
 
 def get_all_tags():
-    conn = sqlite3.connect('tmpdb')
+    conn = sqlite3.connect('setup/tmpdb')
     c=conn.cursor()
     res=c.execute('''select tag, count(*) from rst2tag group by 1 order by 2''').fetchall()
     return dict([(r[0],r[1]) for r in res])

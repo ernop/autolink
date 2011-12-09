@@ -1,0 +1,6 @@
+linkpages
+
+build_page.py does rst2html for all the pages
+
+additions: really simple & bad header & footer
+parses "tags" line and puts tags, and uses them to stick a "links" section onto the bottom of the page.
