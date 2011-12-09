@@ -31,31 +31,29 @@ for f in MUST_EXIST:
     setattr(settings, f.upper(), open(fn,'r').read())
 
 rstdata={}
+settings_overrides={'stylesheet_path':'html4css1.css,hpcss.css',
+    'theme':'big-black',
+    #~ 'link_stylesheet':'',
+    'embed_stylesheet':False,
+    #~ 'template':'template.txt',
+    }
 
-def publish_file(source=None, source_path=None,
-                 destination=None, destination_path=None,
-                 reader=None, reader_name='standalone',
-                 parser=None, parser_name='restructuredtext',
-                 writer=None, writer_name='pseudoxml',
-                 settings=None, settings_spec=None, settings_overrides=None,
-                 config_section=None, enable_exit_status=None):
-    """
-    Set up & run a `Publisher` for programmatic use with file-like I/O.
-    Return the encoded string output also.
+#~ from docutils import Writer
 
-    Parameters: see `publish_programmatically`.
-    """
+#~ class MyWriter(Writer):
+    #~ pass
+
+def publish_file(source_path=None, destination_path=None,
+                 settings_overrides=None
+                 ):
     output, pub = publish_programmatically(
-        source_class=io.FileInput, source=source, source_path=source_path,
-        destination_class=io.FileOutput,
-        destination=destination, destination_path=destination_path,
-        reader=reader, reader_name=reader_name,
-        parser=parser, parser_name=parser_name,
-        writer=writer, writer_name=writer_name,
-        settings=settings, settings_spec=settings_spec,
-        settings_overrides=settings_overrides,
-        config_section=config_section,
-        enable_exit_status=enable_exit_status)
+        source_class=io.FileInput, source=None,source_path=source_path,
+        destination_class=io.FileOutput,destination=None,
+        destination_path=destination_path,reader=None,
+         reader_name='standalone',parser=None,
+        parser_name='restructuredtext',writer=None,writer_name='html',
+        settings=None, settings_spec=None,
+        settings_overrides=settings_overrides,config_section=None, enable_exit_status=None)
     return pub
 
 def isrst(fp):
@@ -80,10 +78,8 @@ def make_htmls(rsts):
         try:
             destpath=rst.replace('.rst','.html')
             destpath=os.path.join(settings.DEST_BASE,destpath)
-            settings_overrides={'stylesheet_path':'html4css1.css,hpcss.css',
-                'theme':'big-black',
-                }
-            pub=publish_file(source_path=rst, writer_name='html', destination_path=destpath, settings_overrides=settings_overrides)
+
+            pub=publish_file(source_path=rst, destination_path=destpath, settings_overrides=settings_overrides)
             dat[rst]={'title':pub.document.get('title')}
         except SystemMessage:
             print 'problem with:',rst
@@ -228,10 +224,7 @@ def make_tag_page(tag):
     if not os.path.exists(rst):
         os.system('touch %s'%rst)
     destpath='%s/tags/%s.html'%(settings.DEST_BASE, tag2urlsafe(tag))
-    settings_overrides={'stylesheet_path':'html4css1.css,hpcss.css',
-        'theme':'big-black',
-        }
-    pub=publish_file(source_path=rst, writer_name='html', destination_path=destpath, settings_overrides=settings_overrides)
+    pub=publish_file(source_path=rst, destination_path=destpath, settings_overrides=settings_overrides)
     lines=open(destpath,'r').readlines()
 
     out=open(destpath,'w')
@@ -248,8 +241,11 @@ def rst2html(rst):
     return rst.replace('.rst','.html').replace('\\','/')
 
 def fix_perms():
-    cmd='chmod 755 .'
-    os.system(cmd)
+    try:
+        cmd='chmod 755 .'
+        os.system(cmd)
+    except:
+        pass
     try:
         cmd='chmod 644 *.html'
         os.system(cmd)
