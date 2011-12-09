@@ -141,12 +141,15 @@ def get_related_rsts(rst, tags_and_weights):
         rsts=tag2rsts(tag, exclude=rst)
         for subrst in rsts:
             res[subrst]=res.get(subrst,0)+(1.0/weight)
-    return sorted(list(res.items()), key=lambda x:-1*x[1])
+    return [_[0] for _ in sorted(list(res.items()), key=lambda x:-1*x[1])]
 
 def make_link_section(rsts):
     res=[]
     for rst in rsts:
-        fn=os.path.split(rst)[1]
+        try:
+            fn=os.path.split(rst)[1]
+        except:
+            import ipdb;ipdb.set_trace();print 'in ipdb!'
         try:
             title=rstdata[rst]['title']
             if title is None:
