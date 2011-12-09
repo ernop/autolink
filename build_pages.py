@@ -13,13 +13,13 @@ settings=Bag()
 
 st= {'HTTP_BASE':''}
 
-st['GENLINK_PREFIX']='<div class="genlink_prefix h2">Related Links</div>'
-st['GENTAG_PREFIX']='<div class="gentag_prefix h2">Tags</div>'
+st['GENLINK_PREFIX']='<h2>Related Links</h2>'
+st['GENTAG_PREFIX']='<h2>Tags</h2>'
 st['DEST_BASE']='d:/proj/rst/'
 if os.path.exists('setup/live'):
     st['HTTP_BASE']='/home'
     st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
-st['TAGPAGE_PREFIX']='<div class="header">Tag page for "%s"</div>'
+st['TAGPAGE_PREFIX']='<h1>Tag page for "%s"</h1>'
 
 settings.__dict__.update(st)
 MUST_EXIST=['header','footer','tag_footer']
@@ -47,6 +47,9 @@ class MyHTMLTranslator(HTMLTranslator):
             #fix dumb drive letter capitalization...
             s=s.replace('D:','d:')
             #stupid.
+            #~ fx=settings.DEST_BASE[0].upper()+settings.DEST_BASE[1:]
+            if settings.DEST_BASE in s:
+                s=s.replace(settings.DEST_BASE,'/')
             if 'http:/' in s:
                 a,b=s.split('http:/',1)
                 a=a.rsplit('"',1)[0]+'"'
@@ -178,6 +181,7 @@ def make_link_section(rsts):
         htmlpath='%s/%s'%(settings.HTTP_BASE,rst2html(rst))
         pt='<div class="genlink"><a href="%s">%s</a></div>'%(htmlpath, title)
         res.append(pt)
+        res.sort(key=lambda x:x.split('</a>',1)[0].rsplit("\">",1)[-1])
     res='<div class="genlink_section">%s%s</div>'%(settings.GENLINK_PREFIX, ''.join(res))
     return res
 
@@ -212,11 +216,13 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags):
         if '</body>' in l:
             l=l.replace('</body>', foot +'</body>')
         if '<body>' in l:
-            l=l.replace('<body>', '<body>'+settings.HEADER)
+            l=l.replace('<body>', '<body>'+settings.HEADER+'<div class="article">')
 
         if l.startswith('<p>tags:'):
+            out.write('</div></div><div class="genblock">')
             out.write(linksection)
             out.write(tagsection)
+            out.write('</div>')
             continue
         out.write(l)
 
@@ -253,7 +259,7 @@ def make_tag_page(tag):
     foot=settings.TAG_FOOTER
     for l in lines:
         if 'class="document">' in l:
-            fxd=l.replace('class="document">','class="document">%s%s%s'%(settings.TAGPAGE_PREFIX%tag,res, foot))
+            fxd=l.replace('class="document">','class="document"><div class="article">%s%s%s</div>'%(settings.TAGPAGE_PREFIX%tag,res, foot))
             out.write(fxd)
         else:
             out.write(l)
@@ -281,6 +287,8 @@ def fix_perms():
 
 def main(base):
     rsts=full_relative_paths_to_rsts(base)
+    if todo.some:
+        rsts=rsts[:5]
     dat=make_htmls(rsts)
     rstdata.update(dat)
     recreate_db()
@@ -303,12 +311,23 @@ def main(base):
         make_tag_page(tag)
     fix_perms()
 
+
+import argparse
+parser = argparse.ArgumentParser(description='')
+parser.add_argument('--some','-s',
+    dest='some',
+    action='store_const',
+    const=True,
+    default=None,
+    )
+parser.add_argument('--base', '-b',dest='base', default='.',
+                   help='base dir to look in.')
+
+todo = parser.parse_known_args()[0]
+
+
 if __name__=="__main__":
-    if len(sys.argv)==1:
-        base='.'
-    else:
-        base=sys.argv[-1]
-    if not os.path.isdir(base):
+    if not os.path.isdir(todo.base):
         print 'bad base.',base
         sys.exit()
-    main(base)
+    main(todo.base)
