@@ -250,10 +250,16 @@ def rst2html(rst):
 def fix_perms():
     cmd='chmod 755 .'
     os.system(cmd)
-    cmd='chmod 644 *.html'
-    os.system(cmd)
-    cmd='chmod 644 *.css'
-    os.system(cmd)
+    try:
+        cmd='chmod 644 *.html'
+        os.system(cmd)
+    except:
+        pass
+    try:
+        cmd='chmod 644 *.css'
+        os.system(cmd)
+    except:
+        pass
 
 def main(base):
 
