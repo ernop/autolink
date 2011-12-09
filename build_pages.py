@@ -47,13 +47,11 @@ class MyHTMLTranslator(HTMLTranslator):
             #fix dumb drive letter capitalization...
             s=s.replace('D:','d:')
             #stupid.
-            if settings.DEST_BASE in s and 'http:/' in s:
-                ss=s.replace(settings.DEST_BASE,'').replace('http:/','http://').replace('&amp;','&')
-                ss=ss
-
-                newlinks.append(ss)
-            else:
-                newlinks.append(s)
+            if 'http:/' in s:
+                a,b=s.split('http:/',1)
+                a=a.rsplit('"',1)[0]+'"'
+                s=a+'http://'+b
+            newlinks.append(s)
         self.stylesheet=newlinks
 
 class MyWriter(Writer):
