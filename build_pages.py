@@ -141,7 +141,7 @@ def get_related_rsts(rst, tags_and_weights):
         rsts=tag2rsts(tag, exclude=rst)
         for subrst in rsts:
             res[subrst]=res.get(subrst,0)+(1.0/weight)
-    return sorted(list(res), key=lambda x:-1*x[1])
+    return sorted(list(res.items()), key=lambda x:-1*x[1])
 
 def make_link_section(rsts):
     res=[]
@@ -188,12 +188,9 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags):
     moddate=os.stat(htmlpath).st_mtime
     foot=settings.FOOTER%datetime.datetime.strftime(datetime.datetime.fromtimestamp(moddate), '%Y-%m-%d')
     for l in lines:
-        #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
         if '</body>' in l:
-            #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
             l=l.replace('</body>', foot +'</body>')
         if '<body>' in l:
-            #~ import ipdb;ipdb.set_trace();print 'in ipdb!'
             l=l.replace('<body>', '<body>'+settings.HEADER)
 
         if l.startswith('<p>tags:'):
@@ -256,6 +253,7 @@ def fix_perms():
     os.system(cmd)
 
 def main(base):
+
     rsts=full_relative_paths_to_rsts(base)
     dat=make_htmls(rsts)
     rstdata.update(dat)
