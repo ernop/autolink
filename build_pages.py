@@ -31,27 +31,51 @@ for f in MUST_EXIST:
     setattr(settings, f.upper(), open(fn,'r').read())
 
 rstdata={}
-settings_overrides={'stylesheet_path':'html4css1.css,hpcss.css',
+settings_overrides={'stylesheet_path':'html4css1.css,hpcss.css,http://fonts.googleapis.com/css?family=Vollkorn&subset=latin',
     'theme':'big-black',
-    #~ 'link_stylesheet':'',
     'embed_stylesheet':False,
     #~ 'template':'template.txt',
+    #~ 'link_stylesheet':'',
     }
 
-#~ from docutils import Writer
+from docutils.writers.html4css1 import Writer, HTMLTranslator
+#change mywriter to use a myhtmltranslator which fixes css so we can mix local links with remote links.
+class MyHTMLTranslator(HTMLTranslator):
+    def fix_style_links(self):
+        newlinks=[]
+        for s in self.stylesheet:
+            #fix dumb drive letter capitalization...
+            s=s.replace('D:','d:')
+            #stupid.
+            if settings.DEST_BASE in s and 'http:/' in s:
+                ss=s.replace(settings.DEST_BASE,'').replace('http:/','http://').replace('&amp;','&')
+                ss=ss
 
-#~ class MyWriter(Writer):
-    #~ pass
+                newlinks.append(ss)
+            else:
+                newlinks.append(s)
+        self.stylesheet=newlinks
+
+class MyWriter(Writer):
+    def translate(self):
+        self.visitor = visitor = MyHTMLTranslator(self.document)
+        self.visitor.fix_style_links()
+        self.document.walkabout(visitor)
+
+        for attr in self.visitor_attributes:
+            setattr(self, attr, getattr(visitor, attr))
+        self.output = self.apply_template()
 
 def publish_file(source_path=None, destination_path=None,
                  settings_overrides=None
                  ):
+    a=MyWriter()
     output, pub = publish_programmatically(
         source_class=io.FileInput, source=None,source_path=source_path,
         destination_class=io.FileOutput,destination=None,
         destination_path=destination_path,reader=None,
          reader_name='standalone',parser=None,
-        parser_name='restructuredtext',writer=None,writer_name='html',
+        parser_name='restructuredtext',writer=a,writer_name='html',
         settings=None, settings_spec=None,
         settings_overrides=settings_overrides,config_section=None, enable_exit_status=None)
     return pub
@@ -258,7 +282,6 @@ def fix_perms():
         pass
 
 def main(base):
-
     rsts=full_relative_paths_to_rsts(base)
     dat=make_htmls(rsts)
     rstdata.update(dat)
