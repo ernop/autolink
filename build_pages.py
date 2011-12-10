@@ -57,10 +57,14 @@ class MyHTMLTranslator(HTMLTranslator):
             newlinks.append(s)
         self.stylesheet=newlinks
 
+    def add_extra_head(self):
+        self.head.append('<meta name="viewport" content="width=device-width" />\n')
+
 class MyWriter(Writer):
     def translate(self):
         self.visitor = visitor = MyHTMLTranslator(self.document)
         self.visitor.fix_style_links()
+        self.visitor.add_extra_head()
         self.document.walkabout(visitor)
 
         for attr in self.visitor_attributes:
