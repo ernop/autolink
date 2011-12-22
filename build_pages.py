@@ -1,4 +1,4 @@
-import sys, os, sqlite3, shutil, datetime
+import sys, os, sqlite3, shutil, datetime, ipdb, re
 from docutils import io
 from docutils.utils import SystemMessage
 from docutils.core import publish_cmdline, default_description, publish_programmatically
@@ -171,27 +171,22 @@ def get_related_rsts(rst, tags_and_weights):
             res[subrst]=res.get(subrst,0)+(1.0/weight)
     return [_[0] for _ in sorted(list(res.items()), key=lambda x:-1*x[1])]
 
+
+def rst2link(rst):
+    htmlpath='%s/%s'%(settings.HTTP_BASE,rst2html(rst))
+    title=rstdata[rst]['title']
+    pt='<div class="genlink"><a href="%s">%s</a></div>'%(htmlpath, title)
+    return pt
+
 def make_link_section(rsts):
     res=[]
     for rst in rsts:
-        try:
-            fn=os.path.split(rst)[1]
-        except:
-            import ipdb;ipdb.set_trace();print 'in ipdb!'
-        try:
-            title=rstdata[rst]['title']
-            if title is None:
-                title='no title %s'%rst
-        except:
-            title='TITLEMISSING %s'%rst
-            import ipdb;ipdb.set_trace();print 'in ipdb!'
-        htmlpath='%s/%s'%(settings.HTTP_BASE,rst2html(rst))
-        pt='<div class="genlink"><a href="%s">%s</a></div>'%(htmlpath, title)
+        fn=os.path.split(rst)[1]
+        pt=rst2link(rst)
         res.append(pt)
         res.sort(key=lambda x:x.split('</a>',1)[0].rsplit("\">",1)[-1])
     res='<div class="genlink_section">%s%s</div>'%(settings.GENLINK_PREFIX, ''.join(res))
     return res
-
 
 def tag2link(tag, count=None):
     taglink='%s/tags/%s.html'%(settings.HTTP_BASE, tag2urlsafe(tag))
@@ -215,6 +210,22 @@ def make_tag_section(tags):
     res='<div class="gentag_section">%s%s</div>'%(settings.GENTAG_PREFIX, ''.join(res))
     return res
 
+
+def linktext2rst(linktext):
+    dashed=linktext.strip('[]').lower().replace(' ','-')
+    matches=[]
+    for k in rstdata.keys():
+        if dashed in k:
+            matches.append(k)
+    if not matches:
+        print 'ERROR, no link found for %s'%linktext
+        import ipdb;ipdb.set_trace()
+        return None
+    if len(matches)>1:
+        matches.sort(key=lambda x:len(x))
+        print 'multiple matches for linktext %s, %s'%(linktext,matches)
+    return matches[0]
+
 def put_stuff_into_html(htmlpath, html, related_rsts, tags):
     assert htmlpath.endswith('.html')
     if not htmlpath.endswith('.html'):
@@ -227,12 +238,21 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags):
     out=open(htmlpath,'w')
     moddate=os.stat(htmlpath).st_mtime
     foot=mkfoot(moddate)
+    linkre=re.compile(r'(?P<linkname>\[[^\]\[]+\])')
     for l in lines:
         if '</body>' in l:
             l=l.replace('</body>', foot +'</body>')
         if '<body>' in l:
             l=l.replace('<body>', '<body>'+settings.HEADER+'<div class="article">')
-
+        links=linkre.findall(l)
+        if links:
+            for txt in links:
+                target_rst=linktext2rst(txt)
+                if not target_rst:
+                    continue
+                target_link=rst2link(target_rst)
+                if target_link:
+                    l=l.replace(txt,target_link)
         if l.startswith('<p>tags:'):
             out.write('</div></div><div class="genblock">')
             out.write(tagsection)
@@ -333,7 +353,7 @@ def main(base):
     dat=make_htmls(rsts)
     rstdata.update(dat)
     recreate_db()
-    for rst in rsts:
+    for rst in sorted(rsts):
         print rst
         tags=get_tags(rst)
         if not tags:
