@@ -259,7 +259,7 @@ def tag2urlsafe(tag):
 
 
 def getblank(destpath):
-    rst='_blank.rst'
+    rst='_blank.rsx'
     if not os.path.exists(rst):
         os.system('touch %s'%rst)
     pub=publish_file(source_path=rst, destination_path=destpath, settings_overrides=settings_overrides)
@@ -336,6 +336,11 @@ def main(base):
     for rst in rsts:
         print rst
         tags=get_tags(rst)
+        if not tags:
+            print 'ERROR, rst has no tags. %s'%rst
+        for t in tags:
+            if t.lower()!=t:
+                print 'ERROR in tag: %s, not lowercase. %s'%(t, rst)
         add_tags_to_db(rst=rst, tags=tags)
     alltags=get_all_tags()
     for rst in rsts:
