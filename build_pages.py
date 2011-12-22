@@ -172,10 +172,13 @@ def get_related_rsts(rst, tags_and_weights):
     return [_[0] for _ in sorted(list(res.items()), key=lambda x:-1*x[1])]
 
 
-def rst2link(rst):
+def rst2link(rst, page=False):
     htmlpath='%s/%s'%(settings.HTTP_BASE,rst2html(rst))
     title=rstdata[rst]['title']
-    pt='<div class="genlink"><a href="%s">%s</a></div>'%(htmlpath, title)
+    if page:
+        pt='<a href="%s">%s</a>'%(htmlpath, title)
+    else:
+        pt='<div class="genlink"><a href="%s">%s</a></div>'%(htmlpath, title)
     return pt
 
 def make_link_section(rsts):
@@ -223,7 +226,8 @@ def linktext2rst(linktext):
         return None
     if len(matches)>1:
         matches.sort(key=lambda x:len(x))
-        print 'multiple matches for linktext %s, %s'%(linktext,matches)
+        print 'ERROR, multiple matches for linktext %s, %s'%(linktext,matches)
+        import ipdb;ipdb.set_trace()
     return matches[0]
 
 def put_stuff_into_html(htmlpath, html, related_rsts, tags):
@@ -250,7 +254,7 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags):
                 target_rst=linktext2rst(txt)
                 if not target_rst:
                     continue
-                target_link=rst2link(target_rst)
+                target_link=rst2link(target_rst, page=True)
                 if target_link:
                     l=l.replace(txt,target_link)
         if l.startswith('<p>tags:'):
@@ -289,7 +293,7 @@ def make_tag_page(tag):
     rsts=tag2rsts(tag, exclude=[])
     if len(rsts)<=1:
         return 0
-    print 'tag %s, len %d'%(tag, len(rsts))
+    print '%s (%d)'%(tag, len(rsts)),
     res=make_link_section(rsts)
     destpath='%stags/%s.html'%(settings.DEST_BASE, tag2urlsafe(tag))
     getblank(destpath)
@@ -313,11 +317,11 @@ def fix_perms():
         os.system(cmd)
     except:
         pass
-    try:
-        cmd='chmod 644 *.html'
-        os.system(cmd)
-    except:
-        pass
+    #~ try:
+        #~ cmd='chmod 644 *.html'
+        #~ os.system(cmd)
+    #~ except:
+        #~ pass
     try:
         cmd='chmod 644 *.css'
         os.system(cmd)
@@ -353,8 +357,9 @@ def main(base):
     dat=make_htmls(rsts)
     rstdata.update(dat)
     recreate_db()
-    for rst in sorted(rsts):
-        print rst
+    rsts.sort()
+    for ii,rst in enumerate(rsts):
+        print rst[2:].replace('.rst',''),
         tags=get_tags(rst)
         if not tags:
             print 'ERROR, rst has no tags. %s'%rst
@@ -362,6 +367,7 @@ def main(base):
             if t.lower()!=t:
                 print 'ERROR in tag: %s, not lowercase. %s'%(t, rst)
         add_tags_to_db(rst=rst, tags=tags)
+    print ''
     alltags=get_all_tags()
     for rst in rsts:
         tags=tags_from_db(rst)
@@ -369,12 +375,11 @@ def main(base):
         related_rsts=get_related_rsts(rst, tags_and_weights)[:10]
         htmlpath=rst2htmlpath(rst)
         put_stuff_into_html(htmlpath, rst2html(rst), related_rsts, tags)
-
     tagdir=os.path.join(settings.DEST_BASE,'tags')
     if not os.path.exists(tagdir):
         os.makedirs(tagdir)
     tagcounts={}
-    for tag in alltags.keys():
+    for tag in sorted(alltags.keys()):
         tagcounts[tag]=make_tag_page(tag)
     make_all_tags_page(tagcounts)
     fix_perms()
