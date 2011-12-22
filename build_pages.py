@@ -19,6 +19,9 @@ st['DEST_BASE']='d:/proj/rst/'
 if os.path.exists('setup/live'):
     st['HTTP_BASE']='/home'
     st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
+if os.path.exists('setup/linux'):
+    st['HTTP_BASE']=''
+    st['DEST_BASE']='/home/ernie/ernop/home/'
 st['TAGPAGE_PREFIX']='<h1>Tag page for "%s"</h1>'
 
 settings.__dict__.update(st)
@@ -110,11 +113,11 @@ def make_htmls(rsts):
 
             pub=publish_file(source_path=rst, destination_path=destpath, settings_overrides=settings_overrides)
             dat[rst]={'title':pub.document.get('title')}
-        except SystemMessage:
-            print 'problem with:',rst
+        except SystemMessage, e:
+            print 'problem with:',rst,e
             import ipdb;ipdb.set_trace();print 'in ipdb!'
-        except:
-            print 'other problem!'
+        except Exception, e:
+            print 'other problem!',e
             import traceback
             traceback.print_exc()
             import ipdb;ipdb.set_trace();print 'in ipdb!'
@@ -189,15 +192,23 @@ def make_link_section(rsts):
     res='<div class="genlink_section">%s%s</div>'%(settings.GENLINK_PREFIX, ''.join(res))
     return res
 
+
+def tag2link(tag, count=None):
+    taglink='%s/tags/%s.html'%(settings.HTTP_BASE, tag2urlsafe(tag))
+    if count:
+        pt='<div class="gentag"><a href="%s">%s (%d)</a></div>'%(taglink, tag, count)
+    else:
+        pt='<div class="gentag"><a href="%s">%s</a></div>'%(taglink, tag)
+
+    return pt
+
 def make_tag_section(tags):
     res=[]
-
     for tag in tags:
         link=len(tag2rsts(tag, exclude=[]))>1
         #it is definitely wrong to get this here when you're already getting it later to make the actual tag pages.
-        taglink='%s/tags/%s.html'%(settings.HTTP_BASE, tag2urlsafe(tag))
         if link:
-            pt='<div class="gentag"><a href="%s">%s</a></div>'%(taglink, tag)
+            pt=tag2link(tag)
         else:
             pt='<div class="gentag">%s</div>'%(tag)
         res.append(pt)
@@ -215,7 +226,7 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags):
     tagsection=make_tag_section(tags)
     out=open(htmlpath,'w')
     moddate=os.stat(htmlpath).st_mtime
-    foot=settings.FOOTER%datetime.datetime.strftime(datetime.datetime.fromtimestamp(moddate), '%Y-%m-%d')
+    foot=mkfoot(moddate)
     for l in lines:
         if '</body>' in l:
             l=l.replace('</body>', foot +'</body>')
@@ -224,8 +235,8 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags):
 
         if l.startswith('<p>tags:'):
             out.write('</div></div><div class="genblock">')
-            out.write(linksection)
             out.write(tagsection)
+            out.write(linksection)
             out.write('</div>')
             continue
         out.write(l)
@@ -246,19 +257,23 @@ def get_all_tags():
 def tag2urlsafe(tag):
     return tag.replace(' ','_')
 
+
+def getblank(destpath):
+    rst='_blank.rst'
+    if not os.path.exists(rst):
+        os.system('touch %s'%rst)
+    pub=publish_file(source_path=rst, destination_path=destpath, settings_overrides=settings_overrides)
+    return pub
+
 def make_tag_page(tag):
     rsts=tag2rsts(tag, exclude=[])
     if len(rsts)<=1:
         return 0
     print 'tag %s, len %d'%(tag, len(rsts))
     res=make_link_section(rsts)
-    rst='_blank.rst'
-    if not os.path.exists(rst):
-        os.system('touch %s'%rst)
-    destpath='%s/tags/%s.html'%(settings.DEST_BASE, tag2urlsafe(tag))
-    pub=publish_file(source_path=rst, destination_path=destpath, settings_overrides=settings_overrides)
+    destpath='%stags/%s.html'%(settings.DEST_BASE, tag2urlsafe(tag))
+    getblank(destpath)
     lines=open(destpath,'r').readlines()
-
     out=open(destpath,'w')
     foot=settings.TAG_FOOTER
     for l in lines:
@@ -289,6 +304,28 @@ def fix_perms():
     except:
         pass
 
+
+def mkfoot(moddate):
+    foot=settings.FOOTER%datetime.datetime.strftime(datetime.datetime.fromtimestamp(moddate), '%Y-%m-%d')
+    return foot
+
+def make_all_tags_page(tagcounts):
+    destpath='%s/tags/index.html'%(settings.DEST_BASE)
+    getblank(destpath)
+    lines=open(destpath,'r').readlines()
+    out=open(destpath,'w')
+    foot=settings.TAG_FOOTER
+    res=''
+    for tag,count  in sorted(tagcounts.items(),key=lambda x:-1*x[1]):
+        if count>1:
+            res+=tag2link(tag, count)
+    for l in lines:
+        if 'class="document">' in l:
+            fxd=l.replace('class="document">','class="document"><div class="article">%s%s%s</div>'%(settings.TAGPAGE_PREFIX%'All',res, foot))
+            out.write(fxd)
+        else:
+            out.write(l)
+
 def main(base):
     rsts=full_relative_paths_to_rsts(base)
     if todo.some:
@@ -311,10 +348,11 @@ def main(base):
     tagdir=os.path.join(settings.DEST_BASE,'tags')
     if not os.path.exists(tagdir):
         os.makedirs(tagdir)
+    tagcounts={}
     for tag in alltags.keys():
-        make_tag_page(tag)
+        tagcounts[tag]=make_tag_page(tag)
+    make_all_tags_page(tagcounts)
     fix_perms()
-
 
 import argparse
 parser = argparse.ArgumentParser(description='')
@@ -324,6 +362,7 @@ parser.add_argument('--some','-s',
     const=True,
     default=None,
     )
+
 parser.add_argument('--base', '-b',dest='base', default='.',
                    help='base dir to look in.')
 
