@@ -230,7 +230,7 @@ def linktext2rst(linktext):
         import ipdb;ipdb.set_trace()
     return matches[0]
 
-def put_stuff_into_html(htmlpath, html, related_rsts, tags):
+def put_stuff_into_html(htmlpath, html, related_rsts, tags, moddate):
     assert htmlpath.endswith('.html')
     if not htmlpath.endswith('.html'):
         import ipdb;ipdb.set_trace();print 'in ipdb!'
@@ -240,7 +240,6 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags):
     linksection=make_link_section(related_rsts)
     tagsection=make_tag_section(tags)
     out=open(htmlpath,'w')
-    moddate=os.stat(htmlpath).st_mtime
     foot=mkfoot(moddate)
     linkre=re.compile(r'(?P<linkname>\[[^\]\[]+\])')
     for l in lines:
@@ -374,7 +373,7 @@ def main(base):
         tags_and_weights=sorted([(tag, alltags[tag]) for tag in tags], key=lambda x:x[1])
         related_rsts=get_related_rsts(rst, tags_and_weights)[:10]
         htmlpath=rst2htmlpath(rst)
-        put_stuff_into_html(htmlpath, rst2html(rst), related_rsts, tags)
+        put_stuff_into_html(htmlpath, rst2html(rst), related_rsts, tags, os.stat(rst).st_mtime)
     tagdir=os.path.join(settings.DEST_BASE,'tags')
     if not os.path.exists(tagdir):
         os.makedirs(tagdir)
