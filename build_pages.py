@@ -17,12 +17,15 @@ st['GENLINK_PREFIX']='<h2>Related Links</h2>'
 st['GENTAG_PREFIX']='<h2>Tags</h2>'
 st['DEST_BASE']='d:/proj/rst/'
 if os.path.exists('setup/live'):
+    local=False
     st['HTTP_BASE']='/home'
     st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
 if os.path.exists('setup/work'):
+    local=True
     st['HTTP_BASE']=''
     st['DEST_BASE']='/home/ernie/ernop/home/'
 if os.path.exists('setup/home'):
+    local=True
     st['HTTP_BASE']=''
     st['DEST_BASE']='/home/ernie/proj/home/'
 
@@ -260,10 +263,16 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags, moddate):
                 target_link=rst2link(target_rst, page=True)
                 if target_link:
                     l=l.replace(txt,target_link)
-        if l.startswith('<p>tags:'):
+        if '<p>tags:' in l:
+            pt=l.split('<p>tags',1)
+            out.write(pt[0])
+            #gotta keep the first part.
             out.write('</div></div><div class="genblock">')
             out.write(tagsection)
             out.write(linksection)
+            if local:
+                localsection='<p><a href=http://fuseki.net/home/%s>live link</a>'%(htmlpath.rsplit('/',1)[-1])
+                out.write(localsection)
             out.write('</div>')
             continue
         out.write(l)
@@ -355,8 +364,10 @@ def make_all_tags_page(tagcounts):
 
 def main(base):
     rsts=full_relative_paths_to_rsts(base)
-    if todo.some:
+    if todo.some=='1':
         rsts=rsts[:5]
+    if todo.some:
+        rsts=[r for r in rsts if 'zhu' in r]
     dat=make_htmls(rsts)
     rstdata.update(dat)
     recreate_db()
