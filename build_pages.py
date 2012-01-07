@@ -343,7 +343,7 @@ def make_all_tags_page(tagcounts):
     out=open(destpath,'w')
     foot=settings.TAG_FOOTER
     res=''
-    for tag,count  in sorted(tagcounts.items(),key=lambda x:-1*x[1]):
+    for tag,count  in sorted(tagcounts.items(),key=lambda x:(-1*x[1],x[0])):
         if count>1:
             res+=tag2link(tag, count)
     for l in lines:
