@@ -19,9 +19,13 @@ st['DEST_BASE']='d:/proj/rst/'
 if os.path.exists('setup/live'):
     st['HTTP_BASE']='/home'
     st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
-if os.path.exists('setup/linux'):
+if os.path.exists('setup/work'):
     st['HTTP_BASE']=''
     st['DEST_BASE']='/home/ernie/ernop/home/'
+if os.path.exists('setup/home'):
+    st['HTTP_BASE']=''
+    st['DEST_BASE']='/home/ernie/proj/home/'
+
 st['TAGPAGE_PREFIX']='<h1>Tag page for "%s"</h1>'
 
 settings.__dict__.update(st)
@@ -248,7 +252,7 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags, moddate):
         if '<body>' in l:
             l=l.replace('<body>', '<body>'+settings.HEADER+'<div class="article">')
         links=linkre.findall(l)
-        if links:
+        if links and 'bookmarklet' not in htmlpath:
             for txt in links:
                 target_rst=linktext2rst(txt)
                 if not target_rst:
