@@ -185,7 +185,7 @@ def rst2link(rst, page=False):
     if page:
         pt='<a href="%s">%s</a>'%(htmlpath, title)
     else:
-        pt='<div class="genlink"><a href="%s">%s</a></div>'%(htmlpath, title)
+        pt='<span class="genlink"><a href="%s">%s</a></span>'%(htmlpath, title)
     return pt
 
 def make_link_section(rsts):
@@ -194,7 +194,7 @@ def make_link_section(rsts):
         fn=os.path.split(rst)[1]
         pt=rst2link(rst)
         res.append(pt)
-        res.sort(key=lambda x:x.split('</a>',1)[0].rsplit("\">",1)[-1])
+        #res.sort(key=lambda x:x.split('</a>',1)[0].rsplit("\">",1)[-1])
     res='<div class="genlink_section">%s%s</div>'%(settings.GENLINK_PREFIX, ''.join(res))
     return res
 
