@@ -269,7 +269,7 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags, moddate):
             out.write(pt[0])
             #gotta keep the first part.
 
-            out.write('</div></div></div><div class="genblock">')
+            out.write('</div></div></div></div></div><div class="genblock">')
             #when we have multiple h2s, somehow 2 </divs> is not enough - we're still in body.  so put 3 and restyle genblock same as article.
             out.write(tagsection)
             out.write(linksection)
