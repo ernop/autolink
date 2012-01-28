@@ -167,10 +167,11 @@ def tag2rsts(tag, exclude=None):
     conn = sqlite3.connect('setup/tmpdb')
     c=conn.cursor()
     res=c.execute('select rst from rst2tag where tag="%s"'%tag).fetchall()
-    res=[r[0] for r in res if r[0] not in exclude]
+    res=sorted([r[0] for r in res if r[0] not in exclude], key=lambda x:rstdata[x]['title'])
     return res
 
 def get_related_rsts(rst, tags_and_weights):
+    """ordered by weight."""
     res={}
     for tag, weight in tags_and_weights:
         rsts=tag2rsts(tag, exclude=rst)
@@ -195,7 +196,7 @@ def make_link_section(rsts):
         pt=rst2link(rst)
         res.append(pt)
         #res.sort(key=lambda x:x.split('</a>',1)[0].rsplit("\">",1)[-1])
-    res='<div class="genlink_section">%s%s</div>'%(settings.GENLINK_PREFIX, ''.join(res))
+    res='<span class="genlink_section">%s%s</span>'%(settings.GENLINK_PREFIX, ''.join(res))
     return res
 
 def tag2link(tag, count=None):
@@ -294,7 +295,6 @@ def get_all_tags():
 
 def tag2urlsafe(tag):
     return tag.replace(' ','_')
-
 
 def getblank(destpath):
     rst='_blank.rsx'
