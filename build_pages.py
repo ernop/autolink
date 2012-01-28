@@ -316,7 +316,7 @@ def make_tag_page(tag):
     foot=settings.TAG_FOOTER
     for l in lines:
         if 'class="document">' in l:
-            fxd=l.replace('class="document">','class="document"><div class="article">%s%s%s</div>'%(settings.TAGPAGE_PREFIX%tag,res, foot))
+            fxd=l.replace('class="document">','class="document"><div class="article">%s%s</div>%s'%(settings.TAGPAGE_PREFIX%tag,res, foot))
             out.write(fxd)
         else:
             out.write(l)
@@ -359,7 +359,7 @@ def make_all_tags_page(tagcounts):
             res+=tag2link(tag, count)
     for l in lines:
         if 'class="document">' in l:
-            fxd=l.replace('class="document">','class="document"><div class="article">%s%s%s</div>'%(settings.TAGPAGE_PREFIX%'All',res, foot))
+            fxd=l.replace('class="document">','class="document"><div class="article">%s%s</div>%s'%(settings.TAGPAGE_PREFIX%'All',res, foot))
             out.write(fxd)
         else:
             out.write(l)
