@@ -267,7 +267,9 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags, moddate):
             pt=l.split('<p>tags',1)
             out.write(pt[0])
             #gotta keep the first part.
-            out.write('</div></div><div class="genblock">')
+
+            out.write('</div></div></div><div class="genblock">')
+            #when we have multiple h2s, somehow 2 </divs> is not enough - we're still in body.  so put 3 and restyle genblock same as article.
             out.write(tagsection)
             out.write(linksection)
             if local:
@@ -367,7 +369,7 @@ def main(base):
     if todo.some=='1':
         rsts=rsts[:5]
     if todo.some:
-        rsts=[r for r in rsts if 'zhu' in r]
+        rsts=[r for r in rsts if 'bookmar' in r]
     dat=make_htmls(rsts)
     rstdata.update(dat)
     recreate_db()
