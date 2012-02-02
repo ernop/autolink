@@ -1,1 +1,12 @@
 build it separately.
+
+get rid of web.py
+fix templating
+
+mouseovers for tags - when mouse over tag, related articles highlight.  when mouse over article, related tags highlight!  plus extras maybe too?
+
+word map / frequency thing?
+
+automatic linking due to word density etc?
+
+switch to a wiki format? what would be gained?
