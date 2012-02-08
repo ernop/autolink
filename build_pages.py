@@ -359,7 +359,7 @@ def make_all_tags_page(tagcounts):
             res+=tag2link(tag, count)
     for l in lines:
         if 'class="document">' in l:
-            fxd=l.replace('class="document">','class="document"><div class="article">%s%s</div>%s'%(settings.TAGPAGE_PREFIX%'All',res, foot))
+            fxd=l.replace('class="document">','class="document"><div class="article">All tags %s</div>%s'%(res, foot))
             out.write(fxd)
         else:
             out.write(l)
