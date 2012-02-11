@@ -326,6 +326,8 @@ def make_tag_page(tag):
     out=open(destpath,'w')
     foot=settings.TAG_FOOTER
     for l in lines:
+        if '<title>' in l:
+            l=l.replace('<title>','<title>Tage Page for %s'%tag)
         if 'class="document">' in l:
             fxd=l.replace('class="document">','class="document"><div class="article">%s%s</div>%s'%(settings.TAGPAGE_PREFIX%tag,res, foot))
             out.write(fxd)
@@ -366,9 +368,13 @@ def make_all_tags_page(tagcounts):
     foot=settings.TAG_FOOTER
     res=''
     for tag,count  in sorted(tagcounts.items(),key=lambda x:(-1*x[1],x[0])):
+        if tag.startswith('_'):
+            continue
         if count>1:
             res+=tag2link(tag, count)
     for l in lines:
+        if '<title>' in l:
+            l=l.replace('<title>','<title>All Tags')
         if 'class="document">' in l:
             fxd=l.replace('class="document">','class="document"><div class="article"><h1>All tags</h1> %s</div>%s'%(res, foot))
             out.write(fxd)
