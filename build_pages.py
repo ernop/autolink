@@ -1,4 +1,4 @@
-import sys, os, sqlite3, shutil, datetime, ipdb, re
+import sys, os, sqlite3, shutil, datetime, ipdb, re, time
 from docutils import io
 from docutils.utils import SystemMessage
 from docutils.core import publish_cmdline, default_description, publish_programmatically
@@ -183,7 +183,10 @@ def get_related_rsts(rst, tags_and_weights):
 
 def rst2link(rst, page=False):
     htmlpath='%s/%s'%(settings.HTTP_BASE,rst2html(rst))
-    title=rstdata[rst]['title']
+    if rst in rstdata:
+        title=rstdata[rst]['title']
+    else:
+        title=rst.replace(".rsx",'').replace('-',' ').title()
     if page:
         pt='<a href="%s">%s</a>'%(htmlpath, title)
     else:
@@ -370,6 +373,60 @@ def make_all_tags_page(tagcounts):
         else:
             out.write(l)
 
+def make_all_pages_page():
+    destpath='%s/all_pages.html'%(settings.DEST_BASE)
+    getblank(destpath)
+    lines=open(destpath,'r').readlines()
+    out=open(destpath,'w')
+    foot=settings.FOOTER
+    res=''
+    rsts=[_[0] for _ in sorted([(k[0],k[1]['title']) for k in rstdata.items()], key=lambda x:x[1])]
+    linksection=make_link_section(rsts)
+    out=open(destpath,'w')
+    foot=mkfoot(time.time())
+    linkre=re.compile(r'(?P<linkname>\[[^\]\[]+\])')
+    for l in lines:
+        if '</body>' in l:
+            l=l.replace('</body>', linksection+foot +'</body>')
+        if '<body>' in l:
+            l=l.replace('<body>', '<body><h1>All Pages</h1>'+settings.HEADER+'<div class="article">')
+        if '<p>tags:' in l and 0:
+            pt=l.split('<p>tags',1)
+            out.write(pt[0])
+            #gotta keep the first part.
+
+            out.write('</div></div></div></div></div><div class="genblock">')
+            #when we have multiple h2s, somehow 2 </divs> is not enough - we're still in body.  so put 3 and restyle genblock same as article.
+            out.write(tagsection)
+            out.write(linksection)
+            if local:
+                localsection='<p><a href=http://fuseki.net/home/%s>live link</a>'%(destpath.rsplit('/',1)[-1])
+                out.write(localsection)
+            out.write('</div>')
+            continue
+        out.write(l)
+    out.close()
+
+def make_all_rsx_pages():
+    destpath='%s/all_rsx.html'%(settings.DEST_BASE)
+    getblank(destpath)
+    lines=open(destpath,'r').readlines()
+    out=open(destpath,'w')
+    foot=settings.FOOTER
+    res=''
+    rsts=[r for r in os.listdir('.') if r.endswith('rsx')]
+    linksection=make_link_section(rsts)
+    out=open(destpath,'w')
+    foot=mkfoot(time.time())
+    linkre=re.compile(r'(?P<linkname>\[[^\]\[]+\])')
+    for l in lines:
+        if '</body>' in l:
+            l=l.replace('</body>', linksection+foot +'</body>')
+        if '<body>' in l:
+            l=l.replace('<body>', '<body><h1>All RSXs</h1>'+settings.HEADER+'<div class="article">')
+        out.write(l)
+    out.close()
+
 def main(base):
     rsts=full_relative_paths_to_rsts(base)
     if todo.some=='1':
@@ -404,6 +461,8 @@ def main(base):
     for tag in sorted(alltags.keys()):
         tagcounts[tag]=make_tag_page(tag)
     make_all_tags_page(tagcounts)
+    make_all_pages_page()
+    make_all_rsx_pages()
     fix_perms()
 
 import argparse
