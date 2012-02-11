@@ -1,4 +1,4 @@
-import sys, os, sqlite3, shutil, datetime, ipdb, re, time
+import sys, os, sqlite3, shutil, datetime, ipdb, re, time, random
 from docutils import io
 from docutils.utils import SystemMessage
 from docutils.core import publish_cmdline, default_description, publish_programmatically
@@ -137,6 +137,7 @@ def get_tags(rst):
         if l.startswith('tags:'):
             l=l.split('tags:')[-1]
             tags.extend([tag.strip().lower() for tag in l.split(',') if tag])
+    tags.append(random.choice(['_a','_b','_c','_d']))
     return tags
 
 def add_tags_to_db(rst, tags):
@@ -215,6 +216,7 @@ def tag2link(tag, count=None):
 def make_tag_section(tags):
     res=[]
     for tag in tags:
+        if tag.startswith('_'):continue
         link=len(tag2rsts(tag, exclude=[]))>1
         #it is definitely wrong to get this here when you're already getting it later to make the actual tag pages.
         if link:
@@ -389,7 +391,7 @@ def make_all_pages_page():
         if '</body>' in l:
             l=l.replace('</body>', linksection+foot +'</body>')
         if '<body>' in l:
-            l=l.replace('<body>', '<body><h1>All Pages</h1>'+settings.HEADER+'<div class="article">')
+            l=l.replace('<body>', '<body>'+settings.HEADER+'<div class="article"><h1>All Pages</h1>')
         if '<p>tags:' in l and 0:
             pt=l.split('<p>tags',1)
             out.write(pt[0])
@@ -423,7 +425,7 @@ def make_all_rsx_pages():
         if '</body>' in l:
             l=l.replace('</body>', linksection+foot +'</body>')
         if '<body>' in l:
-            l=l.replace('<body>', '<body><h1>All RSXs</h1>'+settings.HEADER+'<div class="article">')
+            l=l.replace('<body>', '<body>'+settings.HEADER+'<div class="article"><h1>All RSXs</h1>')
         out.write(l)
     out.close()
 
