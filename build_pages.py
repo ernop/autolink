@@ -16,6 +16,7 @@ st= {'HTTP_BASE':''}
 st['GENLINK_PREFIX']='<h2>Related Links</h2>'
 st['GENTAG_PREFIX']='<h2>Tags</h2>'
 st['DEST_BASE']='d:/proj/rst/'
+local=True
 if os.path.exists('setup/live'):
     local=False
     st['HTTP_BASE']='/home'
@@ -223,11 +224,16 @@ def make_tag_section(tags):
 
 
 def linktext2rst(linktext):
+    rawtext=linktext.strip('[]').lower()
     dashed=linktext.strip('[]').lower().replace(' ','-')
     matches=[]
     for k in rstdata.keys():
         if dashed in k:
             matches.append(k)
+    for k,vals in rstdata.items():
+        if rawtext in vals['title'].lower():
+            if k not in matches:
+                matches.append(k)
     if not matches:
         print 'ERROR, no link found for %s'%linktext
         import ipdb;ipdb.set_trace()
@@ -359,7 +365,7 @@ def make_all_tags_page(tagcounts):
             res+=tag2link(tag, count)
     for l in lines:
         if 'class="document">' in l:
-            fxd=l.replace('class="document">','class="document"><div class="article">All tags %s</div>%s'%(res, foot))
+            fxd=l.replace('class="document">','class="document"><div class="article"><h1>All tags</h1> %s</div>%s'%(res, foot))
             out.write(fxd)
         else:
             out.write(l)
@@ -369,7 +375,7 @@ def main(base):
     if todo.some=='1':
         rsts=rsts[:5]
     if todo.some:
-        rsts=[r for r in rsts if 'bookmar' in r]
+        rsts=[r for r in rsts if 'index-test' in r]
     dat=make_htmls(rsts)
     rstdata.update(dat)
     recreate_db()
