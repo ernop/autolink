@@ -137,7 +137,7 @@ def get_tags(rst):
         if l.startswith('tags:'):
             l=l.split('tags:')[-1]
             tags.extend([tag.strip().lower() for tag in l.split(',') if tag])
-    tags.append(random.choice(['_a','_b','_c','_d']))
+    #tags.append(random.choice(['_a','_b','_c','_d']))
     return tags
 
 def add_tags_to_db(rst, tags):
@@ -327,7 +327,7 @@ def make_tag_page(tag):
     foot=settings.TAG_FOOTER
     for l in lines:
         if '<title>' in l:
-            l=l.replace('<title>','<title>Tage Page for %s'%tag)
+            l=l.replace('<title>','<title>Tag Page for %s'%tag)
         if 'class="document">' in l:
             fxd=l.replace('class="document">','class="document"><div class="article">%s%s</div>%s'%(settings.TAGPAGE_PREFIX%tag,res, foot))
             out.write(fxd)
