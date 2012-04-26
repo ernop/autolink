@@ -266,7 +266,7 @@ def put_stuff_into_html(htmlpath, html, related_rsts, tags, moddate):
             l=l.replace('</body>', foot +'</body>')
         if '<body>' in l:
             l=l.replace('<body>', '<body>'+settings.HEADER+'<div class="article">')
-        links=[linkre.findall(l) if _[1]!=' ' and _[-2] != ' ']
+        links=[_ for _ in linkre.findall(l) if _[1]!=' ' and _[-2] != ' ']
         if links and 'bookmarklet' not in htmlpath:
             for txt in links:
                 target_rst=linktext2rst(txt)
