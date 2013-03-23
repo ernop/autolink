@@ -1,4 +1,5 @@
 import sys, os, sqlite3, shutil, datetime, ipdb, re, time, random
+import docutils
 from docutils import io
 from docutils.utils import SystemMessage
 from docutils.core import publish_cmdline, default_description, publish_programmatically
@@ -13,7 +14,7 @@ settings=Bag()
 
 st= {'HTTP_BASE':''}
 
-st['GENLINK_PREFIX']='<h2>Related Links</h2>'
+st['GENLINK_PREFIX']='<h2>Related Pages</h2>'
 st['GENTAG_PREFIX']='<h2>Tags</h2>'
 st['DEST_BASE']='d:/proj/rst/'
 local=True
