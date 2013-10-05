@@ -115,11 +115,11 @@ def full_relative_paths_to_rsts(base):
 def make_htmls(rsts):
     dat={}
     #dat stores extra data - might as well just keep this.
+    #tags=get_tags(rst)  #for checking chess960 stuff
     for rst in rsts:
         try:
             destpath=rst.replace('.rst','.html')
             destpath=os.path.join(settings.DEST_BASE,destpath)
-
             pub=publish_file(source_path=rst, destination_path=destpath, settings_overrides=settings_overrides)
             dat[rst]={'title':pub.document.get('title')}
         except SystemMessage, e:
@@ -463,6 +463,7 @@ def main(base):
         related_rsts=get_related_rsts(rst, tags_and_weights)[:10]
         htmlpath=rst2htmlpath(rst)
         put_stuff_into_html(htmlpath, rst2html(rst), related_rsts, tags, os.stat(rst).st_mtime)
+        put_in_chess_headers(rst, tags, htmlpath)
     tagdir=os.path.join(settings.DEST_BASE,'tags')
     if not os.path.exists(tagdir):
         os.makedirs(tagdir)
@@ -473,6 +474,18 @@ def main(base):
     make_all_pages_page()
     make_all_rsx_pages()
     fix_perms()
+
+def put_in_chess_headers(rst, tags, htmlpath):
+    #stick updated "chessheader.html" into the header.
+    ch = open('chess_header.html', 'r').read()
+    if 'chess960' in tags:
+        print 'chess960 page'
+        html = open(htmlpath, 'r').read()
+        html = html.replace('</head>', ch+'</head>')
+        open(htmlpath, 'w').write(html)
+    else:
+        print 'not in.', tags
+
 
 import argparse
 parser = argparse.ArgumentParser(description='')

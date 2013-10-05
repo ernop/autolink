@@ -1,0 +1,54 @@
+<link rel="stylesheet" href="css/chessboard-0.3.0.css" />
+
+<script src="js/chess.js"></script>
+<script src="js/chessboard-0.3.0.js"></script>
+<script src="js/jquery.js"></script>
+<script src="js/chess.blunder.util.js"></script>
+<script src="js/chess.blunder.functions.js"></script>
+<script src="js/chess.blunder.js"></script>
+<!--info: from https://github.com/ernop/chessui-960 -->
+
+<style>
+body{font-family:calibri;}
+#blunderinfo {width:350px; float:right;display:table;margin-right:46px;margin-top:15px;}
+#board{margin-top:42px;}
+.main{height:100%;margin-top:70px;}
+/*best on top */
+.bestmove{background-color:#7CFC00;}
+.green{background-color:#A3FD4D;}
+.lgreen{background-color:#BEFE80;}
+.llgreen{background-color:#D8FEB2;}
+.blue{background-color:#00CCFF;}
+.lblue{background-color:#99EBFF}
+.red{background-color:#FFAD99;}
+.rred{background-color:#FF704D;}
+.rrred{background-color:#FF3300;}
+.mating{background-color:indianred;}
+.mated{background-color:deeppink;}
+#board .played{border:2px solid purple;height:45px !important;width:45px !important;}
+#board .played img{position:relative;top:-2px;left:-1px;}
+.movedesc.played{border: 5px solid purple;}
+.button{    background:darkgrey;height:30px;width:120px;    font-size:2em;    font-weight:bold;    border:4px solid grey;    border-radius:4px;    padding:7px;    margin:5px;    display:inline-block;    cursor:pointer;    user-select:none;    -webkit-user-select:none;-moz-user-select:none;}
+.button :hover{background:blue;}
+.littlebutton{background:darkgrey;font-weight:bold;    border:4px solid grey;    border-radius:4px;       display:inline-block;    cursor:pointer;    user-select:none;    -webkit-user-select:none;-moz-user-select:none;}
+#navigate-restore{background:darkgrey;    border:4px solid grey;    border-radius:4px;    cursor:pointer;    user-select:none;    -webkit-user-select:none;-moz-user-select:none;width:160px;padding:3px;margin-left:4px;margin-right:4px;float:right;}
+.movechoice{width:70px;padding:5px;}
+.movedesc{white-space:nowrap;padding:4px;padding:5px;width:50px;}
+.movevalue{ padding-left:10px;font-size:2em;white-space:nowrap;}
+.hovered-movedesc{background-color:orchid;}
+.pvzone{}
+.pvmove{margin:4px;display:inline-block;background-color:lightgrey;padding:3px;cursor:pointer;border-radius:4px;border:4px solid grey;}
+.examining-var{background-color:orange;}
+#varzone{display:inline-block;margin-top:5px;height:100px;}
+.medium{font-weight:bold;font-size:1.4em;}
+#pv{height:50px;display:inline-block;}
+#game-navzone{margin-top:10px;}
+#color-explanation{margin-top:10px;}
+#color-explanation td{padding:0 5px;}
+</style>
+
+<script>
+$(document).ready(function(){
+    start_blunder();
+    })
+</script>
