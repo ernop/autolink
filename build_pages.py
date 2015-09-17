@@ -11,17 +11,16 @@ class Bag:
 
 settings=Bag()
 
-
 st= {'HTTP_BASE':''}
 
 st['GENLINK_PREFIX']='<h2>Related Pages</h2>'
 st['GENTAG_PREFIX']='<h2>Tags</h2>'
-st['DEST_BASE']='d:/proj/rst/'
+st['DEST_BASE']=os.getcwd()
 local=True
 if os.path.exists('setup/live'):
     local=False
     st['HTTP_BASE']='/home'
-    st['DEST_BASE']='/home/ernop/fuseki.net/public/home/'
+    st['DEST_BASE']=os.path.join(st['DEST_BASE'], 'public/home/')
 if os.path.exists('setup/work'):
     local=True
     st['HTTP_BASE']=''
@@ -29,7 +28,10 @@ if os.path.exists('setup/work'):
 if os.path.exists('setup/home'):
     local=True
     st['HTTP_BASE']=''
-    st['DEST_BASE']='/home/ernie/proj/home/'
+    st['DEST_BASE']=os.path.join(st['DEST_BASE'], 'home/')
+if not os.path.exists(st['DEST_BASE']):
+    os.makedirs(st['DEST_BASE'])
+assert st['DEST_BASE'].endswith('/'), st['DEST_BASE']
 
 st['TAGPAGE_PREFIX']='<h1>Tag page for "%s"</h1>'
 
@@ -321,7 +323,7 @@ def make_tag_page(tag):
         return 0
     print '%s (%d)'%(tag, len(rsts)),
     res=make_link_section(rsts)
-    destpath='%stags/%s.html'%(settings.DEST_BASE, tag2urlsafe(tag))
+    destpath='%s/tags/%s.html'%(settings.DEST_BASE, tag2urlsafe(tag))
     getblank(destpath)
     lines=open(destpath,'r').readlines()
     out=open(destpath,'w')
@@ -468,6 +470,7 @@ def main(base):
     if not os.path.exists(tagdir):
         os.makedirs(tagdir)
     tagcounts={}
+    import ipdb;ipdb.set_trace()
     for tag in sorted(alltags.keys()):
         tagcounts[tag]=make_tag_page(tag)
     make_all_tags_page(tagcounts)
