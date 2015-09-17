@@ -312,8 +312,7 @@ def tag2urlsafe(tag):
 
 def getblank(destpath):
     rst='_blank.rsx'
-    if not os.path.exists(rst):
-        os.system('touch %s'%rst)
+    os.system('touch %s'%rst) #this must be blank...
     pub=publish_file(source_path=rst, destination_path=destpath, settings_overrides=settings_overrides)
     return pub
 
@@ -470,7 +469,6 @@ def main(base):
     if not os.path.exists(tagdir):
         os.makedirs(tagdir)
     tagcounts={}
-    import ipdb;ipdb.set_trace()
     for tag in sorted(alltags.keys()):
         tagcounts[tag]=make_tag_page(tag)
     make_all_tags_page(tagcounts)
