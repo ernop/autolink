@@ -20,12 +20,12 @@ local=True
 if os.path.exists('setup/live'):
     local=False
     st['HTTP_BASE']='/home'
-    st['DEST_BASE']=os.path.join(st['DEST_BASE'], 'public/home/')
-if os.path.exists('setup/work'):
+    st['DEST_BASE']=os.path.join(st['DEST_BASE'], '../../','public/home/')
+elif os.path.exists('setup/work'):
     local=True
     st['HTTP_BASE']=''
     st['DEST_BASE']='/home/ernie/ernop/home/'
-if os.path.exists('setup/home'):
+elif os.path.exists('setup/home'):
     local=True
     st['HTTP_BASE']=''
     st['DEST_BASE']=os.path.join(st['DEST_BASE'], 'home/')
